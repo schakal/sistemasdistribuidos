@@ -1,0 +1,269 @@
+Estudo Av2 Sistemas Distrbuidos
+
+Estudo Sistemas Distribuidos
+
+Cliente
+import requests
+import urllib.parse
+
+nome=input("digite o nome o id: ")
+
+api="http://127.0.0.1:5000/cliente/"
+url = api+urllib.parse.quote(nome)
+print (url)
+
+dados=requests.get(url).json()
+
+pais = dados['data'][0].get('BillingCountry')
+
+if (pais == 'Brazil'):
+	api = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="
+	enderecoLaSalle = "R. Gastão Gonçalves - Santa Rosa, Niterói - RJ, 24220-000"
+	url = api+urllib.parse.urlencode({"origins": enderecoLaSalle, "destinations": dados['data'][0].get('BillingAddress')})
+	dados = requests.get(url).json()
+	#dados['rows'][0]['elements'][0]['distance'].get('text'))
+	print("R$ " + dados['rows'][0]['elements'][0]['distance'].get('text')))
+
+cliente.py
+
+Server
+from sqlalchemy import create_engine
+from flask import Flask
+from flask import json
+from flask_jsonpify import jsonify
+
+app = Flask(__name__)
+
+@app.route("/cliente/<id>")
+def cliente(id=None):
+	db_connect = create_engine('sqlite:///chinook.db')
+	conn = db_connect.connect()
+	query = conn.execute("select * from invoices where InvoiceId=\'"+id+"\'")
+	result = {'data': [dict(zip(tuple (query.keys()), i)) for i in query.cursor]}
+	return jsonify(result)
+
+app.run()
+
+server.py
+
+
+
+
+
+O seu objetivo nessa avaliação é criar um sistema distribuído, seguindo o modelo cliente-servidor, para o cálculo do preço do frete da entrega de um pedido. O seu sistema deverá ser composto por duas partes (uma para o cliente e outra para o servidor) que devem possuir as características e funcionalidades descritas abaixo.
+ 
+Cliente
+O Cliente deverá solicitar ao usuário o id de um pedido (invoice). A valor do frete deste invoice só poderá ser calculado se o destino for no Brasil. Cabe ao cliente verificar isso.
+ 
+Sabendo que o preço do frete é de R$1,00 para cada 10Km e que o depósito de onde sairão os produtos fica localizado na UnilassaleRJ, informe ao cliente o preço do frete. Por exemplo, para o pedido 25, o preço do frete é R$44,30.
+ 
+Lembrem-se de utilizar as APIs vistas em aula.
+Servidor
+ 
+O servidor deverá responder a chamadas RESTful e retornar dados no formato JSON. Deverá implementar uma rota (invoice) que receberá um id e retornará os dados do banco chinook.db, utilizado em aula, relativos a esse id.
+
+================
+
+Sistemas-Distribuidos/restful-server.py
+   
+44 lines (34 sloc)  1.5 KB
+
+
+from flask import Flask, request, json
+
+
+from flask_restful import Resource, Api
+
+
+from sqlalchemy import create_engine
+
+
+from json import dumps
+
+
+from flask_jsonpify import jsonify
+
+
+
+
+
+
+
+db_connect = create_engine('sqlite:///chinook.db')
+
+
+app = Flask(__name__)
+
+
+api = Api(app)
+
+
+
+
+
+
+
+class Employees(Resource):
+
+
+   def get(self):
+
+
+       conn = db_connect.connect() # connect to database
+
+
+       query = conn.execute("select * from employees") # This line performs query and returns json result
+
+
+       return {'employees': [i[0] for i in query.cursor.fetchall()]} # Fetches first column that is Employee ID
+
+
+
+
+
+
+
+class Tracks(Resource):
+
+
+   def get(self):
+
+
+       conn = db_connect.connect()
+
+
+       query = conn.execute("select trackid, name, composer, unitprice from tracks;")
+
+
+       result = {'data': [dict(zip(tuple (query.keys()) ,i)) for i in query.cursor]}
+
+
+       return jsonify(result)
+
+
+
+
+
+
+
+class Employees_Name(Resource):
+
+
+   def get(self, employee_id):
+
+
+       conn = db_connect.connect()
+
+
+       query = conn.execute("select * from employees where EmployeeId =%d "  %int(employee_id))
+
+
+       result = {'data': [dict(zip(tuple (query.keys()) ,i)) for i in query.cursor]}
+
+
+       print (result)
+
+
+       for i in query:
+
+
+           print(i)
+
+
+       return jsonify(result)
+
+
+#        return json.dumps(result)
+
+
+      
+
+
+
+
+
+
+
+api.add_resource(Employees, '/employees') # Route_1
+
+
+api.add_resource(Tracks, '/tracks') # Route_2
+
+
+api.add_resource(Employees_Name, '/employees/<employee_id>') # Route_3
+
+
+
+
+
+
+
+
+
+
+
+
+if __name__ == '__main__':
+
+
+    app.run(host='0.0.0.0', port='8752')
+
+
+
+
+
+=====
+
+
+
+import requests
+import urllib.parse
+import threading
+
+nome=input("Digite o nome do país: ")
+
+api="http://127.0.0.1:5000/clientes/"
+url = api+urllib.parse.quote(nome)
+print (url)
+
+dados=requests.get(url).json()
+print(dados)
+
+pais = dados['data'][0].get('CustomerId')
+for envia in pais:
+def envia(): 
+          api2="http://127.0.0.1:5000/invoices/"
+          url2 = api2+urllib.parse.quote(pais)
+          dados2=requests.get(url).json()
+          valores = dados2['data'][0].get('Value')
+          soma << valores
+print("A soma dos valores ficou em:"soma)
+t = threading.Thread(target=envia,args=())
+t.start()
+
+-----
+from sqlalchemy import create_engine
+from flask import Flask
+from flask import json
+from flask_jsonpify import jsonify
+
+app = Flask(_name_)
+
+@app.route("/clientes/<id>")
+def cliente(id=None):
+	db_connect = create_engine('sqlite:///chinook.db')
+	conn = db_connect.connect()
+	query = conn.execute("select * from customers where country=\'"+id+"\'")
+	result = {'data': [dict(zip(tuple (query.keys()), i)) for i in query.cursor]}
+	return jsonify(result)
+
+@app.route("/invoices/<id>")
+def nome(id=None):
+	db_connect = create_engine('sqlite:///chinook.db')
+	conn = db_connect.connect()
+	query = conn.execute("select * from invoices where CustomerId="+str(id))
+	result = {'data': [dict(zip(tuple (query.keys()), i)) for i in query.cursor]}
+	return jsonify(result)
+
+app.run(
+
